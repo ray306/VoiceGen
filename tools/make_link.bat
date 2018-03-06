@@ -1,0 +1,1 @@
+mklink /j  c:\%homepath%\praat %cd% 

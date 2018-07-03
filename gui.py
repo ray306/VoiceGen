@@ -1,7 +1,7 @@
 import sys
 import os
 from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QLabel, QDialog, QVBoxLayout, QGridLayout, QRadioButton, QFileDialog, QLineEdit, QTextEdit, QDoubleSpinBox
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QLabel, QDialog, QVBoxLayout, QGridLayout, QRadioButton, QFileDialog, QLineEdit, QTextEdit, QDoubleSpinBox, QPlainTextEdit
 from PyQt5.QtGui import QIcon, QIntValidator
 from PyQt5.QtCore import pyqtSlot
 
@@ -19,7 +19,7 @@ class App(QDialog):
     
     def __init__(self):
         super().__init__()
-        self.title = 'VoiceGenerator'
+        self.title = 'VoiceGenerator 1.7 (by Biao)'
         self.filepath = ''
         self.initUI()
  
@@ -38,6 +38,8 @@ class App(QDialog):
         self.label_openFile.adjustSize() 
 
     def analyze(self):
+        self.bn_analyze.setText('请查看命令行窗口')
+
         cmd = 'python %s/run.py ' %sys.path[0]
 
         if self.radio_gender1.isChecked():
@@ -51,13 +53,26 @@ class App(QDialog):
             cmd += '--nature=1 '
 
         if self.filepath == '':
-            self.filepath = self.readStimuli()
-        cmd += '--filename=%s' %self.filepath
-        cmd += '--duration_target=%s' %self.input_duration.value()
-        cmd += '--weaken_duration=%s' %self.input_weakenD.value()
-        cmd += '--output=%s' %self.input_outputpath.text()
-            
+            self.readStimuli()
+        
+        cmd += '--filename="%s" ' %self.filepath
+        cmd += '--duration_target=%s ' %self.input_duration.value()
+        cmd += '--weaken_duration=%s ' %self.input_weakenD.value()
+        cmd += '--output=%s ' %self.input_outputpath.text()
+
         os.system(cmd)  
+
+    def radio_nature1_clicked(self, enabled):
+        if enabled:
+            self.layout_duration.setTitle('每个拼音发音的目标长度（秒）')
+            self.layout_weakenD.setTitle('每个拼音发音的声音结尾的渐弱时间（秒）')
+            self.input_weakenD.setEnabled(True)
+
+    def radio_nature2_clicked(self, enabled):
+        if enabled:
+            self.layout_duration.setTitle('整段文本发音的目标长度（秒）')
+            self.layout_weakenD.setTitle('[不适用自然模式] 每个拼音发音的声音结尾的渐弱时间（秒）')
+            self.input_weakenD.setEnabled(False)
 
     def HLayout(self, obj, items):
         hbox = QHBoxLayout()
@@ -82,6 +97,8 @@ class App(QDialog):
         self.radio_nature1 = QRadioButton('相同')
         self.radio_nature2 = QRadioButton('自然')
         self.radio_nature1.setChecked(True) 
+        self.radio_nature1.toggled.connect(self.radio_nature1_clicked)
+        self.radio_nature2.toggled.connect(self.radio_nature2_clicked)
         self.HLayout(self.layout_nature,[self.radio_nature1,self.radio_nature2])
         ###
         self.layout_duration = QGroupBox('每个拼音发音的目标长度（秒）')
@@ -102,30 +119,31 @@ class App(QDialog):
         ###
         self.bn_analyze = QPushButton('开始分析', self)
         self.bn_analyze.clicked.connect(self.analyze)
+
         ###
-        self.layout_textbox = QGroupBox('内容')
-        self.textbox = QTextEdit()
-        # self.textbox.resize(600,300)
-        self.HLayout(self.layout_textbox,[self.textbox])
+        # self.layout_textbox = QGroupBox('内容')
+        # self.textbox = QTextEdit('11')
+        # # self.textbox.resize(600,300)
+        # self.HLayout(self.layout_textbox,[self.textbox])
 
         self.verticalLayout1 = QtWidgets.QVBoxLayout()
-        self.verticalLayout1.addWidget(self.bn_openFile)
-        self.verticalLayout1.addWidget(self.label_openFile)
         self.verticalLayout1.addWidget(self.layout_gender)
         self.verticalLayout1.addWidget(self.layout_nature)
         self.verticalLayout1.addWidget(self.layout_duration)
         self.verticalLayout1.addWidget(self.layout_weakenD)
         self.verticalLayout1.addWidget(self.layout_outputpath)
+        self.verticalLayout1.addWidget(self.bn_openFile)
+        self.verticalLayout1.addWidget(self.label_openFile)
         self.verticalLayout1.addWidget(self.bn_analyze)
         
-        self.verticalLayout2 = QtWidgets.QVBoxLayout()
-        self.verticalLayout2.addWidget(self.layout_textbox)
+        # self.verticalLayout2 = QtWidgets.QVBoxLayout()
+        # self.verticalLayout2.addWidget(self.layout_textbox)
 
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setContentsMargins(10, 10, 10, 10)
         self.horizontalLayout.addLayout(self.verticalLayout1)
         # self.horizontalLayout.addLayout(self.verticalLayout2)
- 
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = App()

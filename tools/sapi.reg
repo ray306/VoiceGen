@@ -1,0 +1,35 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SPEECH\Voices\Tokens\MSTTS_V110_zhCN_KangkangM]
+@="Microsoft  Kangkang  Mobile  -  Chinese  (Simplified,  PRC)"
+"LangDataPath"="%windir%\\Speech_OneCore\\Engines\\TTS\\zh-CN\\MSTTSLoczhCN.dat"
+"VoicePath"="%windir%\\Speech_OneCore\\Engines\\TTS\\zh-CN\\M2052Kangkang"
+"804"="Microsoft  Kangkang  Mobile  -  Chinese  (Simplified,  PRC)"
+"CLSID"="{179F3D56-1B0B-42B2-A962-59B7EF59FE1B}"
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SPEECH\Voices\Tokens\MSTTS_V110_zhCN_KangkangM\Attributes]
+"Version"="11.0"
+"Language"="804"
+"Gender"="Male"
+"Age"="Adult"
+"DataVersion"="11.0.2013.1022"
+"SharedPronunciation"=""
+"Name"="Microsoft Kangkang Mobile"
+"Vendor"="Microsoft"
+"SampleText"="您已选择  %1  作为默认语音"
+
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SPEECH\Voices\Tokens\MSTTS_V110_zhCN_YaoyaoM]
+@="Microsoft  Yaoyao  Mobile  -  Chinese  (Simplified,  PRC)"
+"LangDataPath"="%windir%\\Speech_OneCore\\Engines\\TTS\\zh-CN\\MSTTSLoczhCN.dat"
+"VoicePath"="%windir%\\Speech_OneCore\\Engines\\TTS\\zh-CN\\M2052Yaoyao"
+"804"="Microsoft  Yaoyao  Mobile  -  Chinese  (Simplified,  PRC)"
+"CLSID"="{179F3D56-1B0B-42B2-A962-59B7EF59FE1B}"
+[HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\SPEECH\Voices\Tokens\MSTTS_V110_zhCN_YaoyaoM\Attributes]
+"Version"="11.0"
+"Language"="804"
+"Gender"="Female"
+"Age"="Adult"
+"DataVersion"="11.0.2013.1022"
+"SharedPronunciation"=""
+"Name"="Microsoft Yaoyao Mobile"
+"Vendor"="Microsoft"
+"SampleText"="您已选择  %1  作为默认语音"

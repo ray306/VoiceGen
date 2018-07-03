@@ -3,10 +3,10 @@
 
 # =============================================================================
 #  Name：Make_voice
-#  Version: 1.5 (Nov 1, 2017)
+#  Version: 1.7 (July 4, 2018)
 #  Author: Jinbiao Yang (ray306 at gmail.com)
 #
-#  Dependencies: numpy, pandas, librosa, jieba, pypinyin [ffmpg]
+#  Dependencies: numpy, pandas, librosa, jieba, pypinyin, tts.sapi [ffmpg]
 #  Voice sources：
 #     Male：NeoSpeech.Chinese.Liang_v3.11.0.0
 #     Female：NeoSpeech.Chinese.Liang_v3.11.0.0
@@ -43,7 +43,7 @@ Parameters：
                 每个拼音发音的目标长度（秒）
     -n, or --nature,
             NATURE 默认:0
-                是否产生自然发音。选0会固定每个字的发音长度，选1会只固定整个text的发音长度
+                是否产生自然发音(todo)。选0会固定每个字的发音长度，选1会固定整段文本的发音长度
     -g, or --gender,
             GENDER 默认:'male'
                 使用的音源的性别
@@ -81,22 +81,37 @@ try:
     import jieba
     import pypinyin
     from pypinyin import pinyin, lazy_pinyin
+    import tts.sapi
+    voice = tts.sapi.Sapi()
 except:
-    os.system('conda install -c conda-forge resampy')
+    if sys.platform == 'win32':
+        os.system(f'regedit.exe /S {path}/tools/sapi.reg')
+        import tts.sapi
+        voice = tts.sapi.Sapi()
+    # os.system('conda install -c conda-forge resampy')
     os.system('pip install librosa')
     os.system('pip install jieba')
     os.system('pip install pypinyin')
+    os.system('pip install git+https://github.com/DeepHorizons/tts')
+    
     import librosa
     import jieba
     import pypinyin
     from pypinyin import pinyin, lazy_pinyin
 
+for gender in ['male','female']:
+    if not os.path.exists(f'{path}/source/{gender}/00'):
+        os.makedirs(f'{path}/source/{gender}/00')
+        urllib.request.urlretrieve(
+            f"http://cls.ru.nl/~jyang/voice_gen/source/{gender}/00/_speed_log.txt", filename=f'{path}/source/{gender}/00/_speed_log.txt')
+
 '拼音转为声音数据（wav）'
-def toSound(pinyins, duration_target, nature, gender, weaken_duration):
+def toSound1(pinyins, duration_target, gender, weaken_duration):
     def getPinyinWav(gender, py, duration):
         fileloc = f'source/{gender}/00/{py}.wav'
 
         if not os.path.exists(f'{path}/{fileloc}'):
+            print('downloading:', fileloc,'to', f'{path}/{fileloc}')
             urllib.request.urlretrieve("http://cls.ru.nl/~jyang/voice_gen/"+fileloc, filename=f'{path}/{fileloc}')
 
         # 变速
@@ -109,22 +124,37 @@ def toSound(pinyins, duration_target, nature, gender, weaken_duration):
 
     sound_data = np.array([])
 
-    if not nature:
-        for py in pinyins:
-            syllable_data, sr = getPinyinWav(gender, py, duration_target)
+    for py in pinyins:
+        syllable_data, sr = getPinyinWav(gender, py, duration_target)
 
-            # 截掉
-            weaken_sample = int(weaken_duration * sr)
-            syllable_data_new = np.concatenate(
-                [syllable_data[:-weaken_sample],
-                 syllable_data[-weaken_sample:] * np.cos(np.linspace(0, np.pi / 2, weaken_sample))])
+        # 截掉
+        weaken_sample = int(weaken_duration * sr)
+        syllable_data_new = np.concatenate(
+            [syllable_data[:-weaken_sample],
+                syllable_data[-weaken_sample:] * np.cos(np.linspace(0, np.pi / 2, weaken_sample))])
 
-            sound_data = np.concatenate([sound_data, syllable_data_new])
-    else:
-        ##TODO
-        pass
+        sound_data = np.concatenate([sound_data, syllable_data_new])
 
-    return (sound_data*32767).astype(np.int16)
+    return sound_data
+
+
+def toSound2(pinyins, duration_target, gender, name, output):
+    if gender == 'male':
+        voice.set_voice('Microsoft  Kangkang')
+    elif gender == 'female':
+        voice.set_voice('Microsoft  Yaoyao')
+    # voice.set_rate(-5)
+    descrption = ''.join(
+        [f'<PRON SYM="{py[:-1]} {py[-1]}"/>' for py in pinyins])
+
+    voice.create_recording(f'{output}/{gender}/{name}.wav', descrption)
+
+    sound_data, sr = librosa.load(f'{output}/{gender}/{name}.wav')
+    sound_data = librosa.effects.trim(sound_data, ref=500)[0]
+    librosa.output.write_wav(f'{output}/{gender}/{name}.wav', sound_data, 22050)
+
+    os.system(
+        f'{path}/tools/Praat.exe --run {path}/tools/change_duration.praat {name} {output}/{gender}/{name}.wav {output}/{gender} {duration_target}')
 
 '汉字转为拼音'
 def toPinyin(sentence):
@@ -157,10 +187,14 @@ def toPinyin(sentence):
 
 '声音数据输出为wav文件'
 def toWavFile(name, pinyins, duration_target, nature, gender, weaken_duration, output):
-    
-    sound_data = toSound(pinyins, duration_target, nature,
-                         gender, weaken_duration)
-    librosa.output.write_wav(f'{path}/{output}/{gender}/{name}.wav', sound_data, 22050)
+    if not nature:
+        sound_data = toSound1(pinyins, duration_target,
+                            gender, weaken_duration)
+
+        librosa.output.write_wav(f'{output}/{gender}/{name}.wav', sound_data, 22050)
+    else:
+        toSound2(pinyins, duration_target, gender, name, output)
+
     print(f'{output}/{gender}/{name}.wav')
 
 
@@ -174,12 +208,12 @@ def processArgs():
     parser.add_argument("-dt", "--duration_target", default=0.25,
                         help="每个拼音发音的目标长度（秒）")
     parser.add_argument("-n", "--nature", default=0,
-                        help="是否产生自然发音。选0会固定每个字的发音长度，选1会只固定整个text的发音长度")
+                        help="是否产生自然发音。选0会固定每个字的发音长度，选1会固定整段文本的发音长度")
     parser.add_argument("-g", "--gender", default='male',
                         help="使用的音源的性别")
     parser.add_argument("-wd", "--weaken_duration", default=0.025,
                         help="每个拼音发音的声音结尾的渐弱时间（秒）\n加此数值可以减少不同拼音间转换的突兀感，但设置过高会导致发音损失过多信息。")
-    parser.add_argument("-o", "--output", default='output',
+    parser.add_argument("-o", "--output", default=f'{path}/output',
                         help="存放生成的wav文件的文件夹")
 
     args = parser.parse_args()
@@ -189,12 +223,11 @@ def processArgs():
     gender = args.gender
     weaken_duration = float(args.weaken_duration)
     output = args.output
+    
+    fns = [i for i in os.listdir(path) if i[-5:] == '.xlsx' and i[:2]!='~$']
 
-    fns = [i for i in os.listdir(path) if i[-5:]=='.xlsx']
     if len(fns) == 1:
-        filename = fns[0]
-    elif filename not in fns: 
-        raise Exception('读取文件出错！请检查路径是否正确以及文件内容是否规范。')
+        filename = path+'/'+fns[0]
 
     print('本次参数为： \n\
     filename=%s ,\n\
@@ -219,25 +252,29 @@ def main(filename='stimuli.xlsx', duration_target=0.25, gender='male', weaken_du
     filename, duration_target, nature, gender, weaken_duration, output = processArgs()
 
     # read excel
-    df = pd.read_excel(path+'/'+filename)
+    try:
+        df = pd.read_excel(filename)
+    except:
+        raise Exception('读取文件出错！请检查路径是否正确以及文件内容是否规范。')
     
     if 'filename' not in df.columns: # generate the filenames
         df['filename'] = ["%0*d" % (len(str(len(df))), i+1) for i in range(len(df))]
 
     if 'pinyin' not in df.columns:
         df['pinyin'] = df['text'].apply(lambda x: ' '.join(toPinyin(x)))
-        df.to_excel('%s/%s_new.xlsx' %(path,filename[:-5]), index=None)
+        df.to_excel('%s_new.xlsx' %(filename[:-5]), index=None)
         print('请检查新文件%s_new.xlsx中的pinyin列。' % filename[:-5])
     
     # generate WAVs
-    input_val = input('\n是否开始生成wav文件?\n  否（直接回车）/ 是（输入y并回车）\n')
+    print('是否开始生成wav文件?')
+    input_val = input('否（直接回车）/ 是（输入y并回车）')
     if input_val == 'y':
         if not os.path.exists(f'{path}/temp'):
             os.mkdir(f'{path}/temp')
-        if not os.path.exists(f'{path}/{output}'):
-            os.mkdir(f'{path}/{output}')
-        if not os.path.exists(f'{path}/{output}/{gender}'):
-            os.mkdir(f'{path}/{output}/{gender}')
+        # if not os.path.exists(f'{path}/{output}'):
+        #     os.mkdir(f'{path}/{output}')
+        if not os.path.exists(f'{output}/{gender}'):
+            os.makedirs(f'{output}/{gender}')
 
         df.apply(lambda x: toWavFile(
             x.filename, x.pinyin.split(' '),

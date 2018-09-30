@@ -3,7 +3,7 @@
 
 # =============================================================================
 #  Name：Make_voice
-#  Version: 1.7 (July 4, 2018)
+#  Version: 1.7.2 (Sept 30, 2018)
 #  Author: Jinbiao Yang (ray306 at gmail.com)
 #
 #  Dependencies: numpy, pandas, librosa, jieba, pypinyin, tts.sapi [ffmpg]
@@ -43,7 +43,7 @@ Parameters：
                 每个拼音发音的目标长度（秒）
     -n, or --nature,
             NATURE 默认:0
-                是否产生自然发音(todo)。选0会固定每个字的发音长度，选1会固定整段文本的发音长度
+                是否产生自然发音。选0会固定每个字的发音长度，选1会固定整段文本的发音长度
     -g, or --gender,
             GENDER 默认:'male'
                 使用的音源的性别
@@ -84,16 +84,14 @@ try:
     import tts.sapi
     voice = tts.sapi.Sapi()
 except:
-    if sys.platform == 'win32':
-        os.system(f'regedit.exe /S {path}/tools/sapi.reg')
-        import tts.sapi
-        voice = tts.sapi.Sapi()
-    # os.system('conda install -c conda-forge resampy')
     os.system('pip install librosa')
     os.system('pip install jieba')
     os.system('pip install pypinyin')
-    os.system('pip install git+https://github.com/DeepHorizons/tts')
-    
+    if sys.platform == 'win32':
+        os.system(f'pip install {path}/tools/tts-master.zip')
+        os.system(f'regedit.exe /S {path}/tools/sapi.reg')
+        import tts.sapi
+        voice = tts.sapi.Sapi()
     import librosa
     import jieba
     import pypinyin

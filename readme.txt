@@ -1,44 +1,48 @@
 ########################################
 * USEAGE: 
-1. ˫��run.bat
-2. ����male -[����]=[ֵ]��female -[����]=[ֵ]��Ȼ��س�
+双击 “RUN_图形界面”
+
+或：
+1. 双击 “RUN_命令行界面”
+2. 根据男/女声音需求，输入“male -[参数]=[值]”或“female -[参数]=[值]”，然后回车
 
 * Example:
 1: 
     male -fn=test.xlsx
-        ʹ��������Դ����ָ���̼��б��ļ�Ϊtest.xlsx��
+        使用男声音源，并指定刺激列表文件为test.xlsx，其它选项为默认。
 2: 
     female -fn=test.xlsx -dt=0.3
-        ʹ��Ů����Դ����ָ���̼��б��ļ�Ϊtest.xlsx��ָ��ÿ��ƴ��������0.3�롣
+        使用女声音源，并指定刺激列表文件为test.xlsx，指定每个拼音发音长0.3秒，其它选项为默认。
 
 ########################################
 
-* Parameters��
+* Parameters：
     -h, or --help 
             show this help message and exit
     -fn, or --filename,
-            FILENAME, Ĭ��:'stimuli.xlsx'
-                �����̼��б���excel�ļ�,�������������ݡ�
-                ��һ����Ҫ������ļ�������������'filename'�����ڶ����Ƕ�Ӧ���ı�����������'text'��
+            FILENAME, 默认:'stimuli.xlsx'
+                包含刺激列表的excel文件,至少有两列数据。
+                第一列是要输出的文件名（列名输入'filename'），第二列是对应的文本（列名输入'text'）
     -dt, or --duration_target,
-            DURATION_TARGET Ĭ��:0.25
-                ÿ��ƴ��������Ŀ�곤�ȣ��룩
+            DURATION_TARGET 默认:0.25
+                每个拼音发音的目标长度（秒）
     -n, or --nature,
-            NATURE Ĭ��:0
-                �Ƿ������Ȼ����(todo)��ѡ0��̶�ÿ���ֵķ������ȣ�ѡ1��̶������ı��ķ�������
+            NATURE 默认:0
+                是否产生自然发音(todo)。选0会固定每个字的发音长度，选1会固定整段文本的发音长度
     -g, or --gender,
-            GENDER Ĭ��:'male'
-                ʹ�õ���Դ���Ա�
+            GENDER 默认:'male'
+                使用的音源的性别
     -wd, or --weaken_duration,
-            WEAKEN_DURATION Ĭ��:0.025
-                ÿ��ƴ��������������β�Ľ���ʱ�䣨�룩��
-                ���Ӵ���ֵ���Լ���������βͻأ�У������ù��߻ᵼ�·�����ʧ������Ϣ��
+            WEAKEN_DURATION 默认:0.025
+                每个拼音发音的声音结尾的渐弱时间（秒）。
+                增加此数值可以减少声音结尾突兀感，但设置过高会导致发音损失过多信息。
     -o, or --output,
-            OUTPUT Ĭ��:'output',
-                ������ɵ�wav�ļ����ļ���
+            OUTPUT 默认:'output',
+                存放生成的wav文件的文件夹
 
-* Notice��
-    - ���·����ֻ��һ��xlsx�ļ�����ʹ������ļ���Ϊ�̼��б��ļ�
-    - �̼��б��ļ���֧�������ı�����Ϊ����һ�У�����Ϊtext����Ҳ����ֱ������ƴ������Ϊ����һ�У�����Ϊpinyin��������0-4��ʾ��
-    - ����̼��б��ļ���û��pinyin��һ�У�������ȸ���text�е������Զ�����pinyin�С�
-      ���ɵ����ݿ����д�����������һ���˹���鲢��������
+* Notice：
+    - 如果路径下只有一个xlsx文件，则使用这个文件作为刺激列表文件
+    - 刺激列表文件中支持填入文本（作为单独一列，列名为text），也可以直接填入拼音（作为单独一列，列名为pinyin，声调用0-4表示）
+    - 如果刺激列表文件中没有pinyin这一列，程序会先根据text列的内容自动生成pinyin列。
+      生成的内容可能有错，所以请做一遍人工检查并修正错误。
+© 2018 GitHub, Inc.

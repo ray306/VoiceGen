@@ -19,7 +19,7 @@ class App(QDialog):
     
     def __init__(self):
         super().__init__()
-        self.title = 'VoiceGenerator 1.7 (by Biao)'
+        self.title = 'VoiceGenerator 1.7.2 (by Biao)'
         self.filepath = ''
         self.initUI()
  
